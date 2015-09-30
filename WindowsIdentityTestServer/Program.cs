@@ -43,18 +43,24 @@ namespace WindowsIdentityTestServer
 				try
 				{
 					var context = listener.GetContext();
+					context.Response.ContentType = "application/json";
+					Console.WriteLine("Received request from user:" + context.User.Identity.Name + ", authentication type: " + context.User.Identity.AuthenticationType);
 					using (var outputWriter = new StreamWriter(context.Response.OutputStream))
 					{
-						outputWriter.Write("<div>Username = " + context.User.Identity.Name + "<br/>");
-						outputWriter.Write("IsAuthenticated = " + context.User.Identity.IsAuthenticated + "<br/>");
-						outputWriter.Write("AuthenticationType = " + context.User.Identity.AuthenticationType + "<br/></div>");
+						outputWriter.Write(" { \"Username\":\"" + context.User.Identity.Name.Replace("\\","\\\\") + "\",");
+						outputWriter.Write("  \"IsAuthenticated\":\"" + context.User.Identity.IsAuthenticated + "\",");
+						outputWriter.Write("  \"AuthenticationType\":\"" + context.User.Identity.AuthenticationType + "\" }");
 						outputWriter.Flush();
 					}
+
 				}
 				catch(Exception e)
 				{
-					Console.WriteLine(e);
-					Console.WriteLine("Error happened, stopped listening for requests");
+					if (!(e is HttpListenerException))
+					{
+						Console.WriteLine(e);
+						Console.WriteLine("Error happened, stopped listening for requests");
+					}
 					listener.Abort();
 					break;
 				}
